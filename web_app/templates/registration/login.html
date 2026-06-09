@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | Dropout System</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    background: linear-gradient(120deg, #0f172a, #1e3a8a, #2563eb);
+}
+
+.left {
+    flex: 1;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px;
+}
+
+.left h1 {
+    font-size: 42px;
+    margin-bottom: 15px;
+}
+
+.left p {
+    font-size: 18px;
+    opacity: 0.9;
+    max-width: 460px;
+    line-height: 1.6;
+}
+
+.role-box {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.role-badge {
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.22);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-block;
+    transition: background 0.2s;
+}
+.role-badge:hover {
+    background: rgba(255,255,255,0.28);
+}
+
+.right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 390px;
+    padding: 35px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(18px);
+    color: white;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+}
+
+.login-card h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 34px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 40px 12px 12px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    background: rgba(255,255,255,0.9);
+    color: #0f172a;
+    font-size: 15px;
+}
+
+.form-group input::placeholder {
+    color: #64748b;
+}
+
+.eye {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #3b82f6;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 16px;
+}
+
+.login-btn:hover {
+    background: #2563eb;
+}
+
+.error {
+    background: rgba(255,0,0,0.2);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.helper-text {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 13px;
+    color: #dbeafe;
+    line-height: 1.5;
+}
+
+@media(max-width:900px){
+    .left {display:none;}
+    body {justify-content:center;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="left">
+    <h1>Student Performance AI System</h1>
+    <p>
+        An intelligent academic support platform that predicts dropout risk,
+        helps students improve performance, and enables instructors to monitor cases early.
+    </p>
+
+    <div class="role-box">
+        <a href="{% url 'dashboard' %}" class="role-badge">Student → Student Dashboard</a>
+        <a href="{% url 'instructor_dashboard' %}" class="role-badge">Instructor → Instructor Dashboard</a>
+    </div>
+</div>
+
+<div class="right">
+    <div class="login-card">
+        <h2>Login</h2>
+
+        {% if form.errors %}
+        <div class="error">Invalid username or password</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+
+            <div class="form-group">
+                <input type="password" id="password" name="password" placeholder="Password" required>
+                <span class="eye" onclick="togglePassword()">👁️</span>
+            </div>
+
+            <button class="login-btn" type="submit">Sign In</button>
+        </form>
+
+        <div class="helper-text">
+            Users are redirected automatically based on their role after login.
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword(){
+    const pass = document.getElementById("password");
+    pass.type = pass.type === "password" ? "text" : "password";
+}
+</script>
+
+</body>
+</html>

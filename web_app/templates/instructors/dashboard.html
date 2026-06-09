@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.welcome-card,
+.form-card,
+.table-card {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 22px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.22);
+}
+
+/* Stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+}
+
+.stat-card h3 {
+    font-size: 16px;
+    color: #475569;
+    margin-bottom: 10px;
+}
+
+.stat-card p {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* Chart */
+.chart-wrapper {
+    width: 220px;
+    height: 220px;
+    margin: auto;
+}
+
+/* Students */
+.student-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.student-card {
+    background: rgba(255,255,255,0.65);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* Buttons */
+.export-btn {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+.pdf-btn {
+    background: linear-gradient(135deg, #7c3aed, #4c1d95);
+}
+
+/* Table */
+table {
+    width: 100%;
+    font-size: 14px;
+}
+
+th, td {
+    padding: 10px;
+}
+
+th {
+    background: rgba(255,255,255,0.7);
+}
+
+/* Risk Colors */
+.risk-high { color: red; font-weight: bold; }
+.risk-low { color: green; font-weight: bold; }
+
+/* Mobile */
+@media (max-width: 900px) {
+    .stats-grid,
+    .student-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="welcome-card">
+    <h1>Welcome, {{ instructor_name }}</h1>
+    <p>This dashboard helps instructors monitor student predictions and identify high-risk cases.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Total Predictions</h3>
+        <p>{{ total_predictions }}</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>High Risk Cases</h3>
+        <p>{{ high_risk_count }}</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>Low Risk Cases</h3>
+        <p>{{ low_risk_count }}</p>
+    </div>
+</div>
+
+<div class="form-card">
+    <h2>Risk Distribution</h2>
+    <div class="chart-wrapper">
+        <canvas id="riskChart" width="260" height="260"></canvas>
+    </div>
+</div>
+
+<div class="form-card">
+    <h2>Students</h2>
+
+    <form method="get" class="filter-form">
+        <input
+            type="text"
+            name="student_search"
+            placeholder="Search student username"
+            value="{{ student_search }}"
+        >
+        <button type="submit" class="filter-btn">Search</button>
+    </form>
+
+    <div class="student-grid">
+        {% for student in students_list %}
+            <div class="student-card">{{ student.username }}</div>
+        {% empty %}
+            <p>No students found.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="table-card">
+    <a href="{% url 'export_predictions_csv' %}" class="export-btn">Export CSV Report</a>
+    <a href="{% url 'export_predictions_pdf' %}" class="export-btn pdf-btn">Download PDF Report</a>
+
+    <h2>Recent Predictions</h2>
+
+    <form method="get" class="filter-form">
+        <input
+            type="text"
+            name="search"
+            placeholder="Search by student username"
+            value="{{ search_query }}"
+        >
+
+        <select name="risk">
+            <option value="all" {% if risk_filter == "all" %}selected{% endif %}>All</option>
+            <option value="high" {% if risk_filter == "high" %}selected{% endif %}>High Risk Only</option>
+            <option value="low" {% if risk_filter == "low" %}selected{% endif %}>Low Risk Only</option>
+        </select>
+
+        <button type="submit" class="filter-btn">Apply</button>
+        <a href="{% url 'instructor_dashboard' %}" class="clear-btn">Clear</a>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Prediction</th>
+                <th>Probability</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in recent_predictions %}
+            <tr>
+                <td>{{ record.user.username }}</td>
+                <td class="{% if record.prediction == 'High Risk' %}risk-high{% else %}risk-low{% endif %}">
+                    {{ record.prediction }}
+                </td>
+                <td>{{ record.probability|floatformat:2 }}</td>
+                <td>{{ record.created_at }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No predictions available for this filter.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // @ts-ignore
+const ctx = document.getElementById('riskChart');
+
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['High Risk', 'Low Risk'],
+        datasets: [{
+           data: [Number("{{ chart_data.high|default:0 }}"), Number("{{ chart_data.low|default:0 }}")],
+            backgroundColor: [
+                '#3b82f6',  
+                '#ef4444'     ],
+
+            borderWidth: 0,   
+            hoverOffset: 12 }]},
+
+    options: {
+        responsive: true,
+        cutout: '70%',   
+
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    color: '#fff',
+                    font: {
+                        size: 14,
+                        weight: 'bold'}}}}}});
+</script>
+
+{% endblock %}
+
+
