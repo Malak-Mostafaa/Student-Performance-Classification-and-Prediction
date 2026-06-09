@@ -53,3 +53,31 @@ To provide an intelligent early warning system that helps educational institutio
 ## 👩‍💻 Developer
 Malak Mostafa Abdelfattah Ahmed
 AI Engineer | Python Developer
+
+## 📸 Screenshots
+### Login Page
+![Login](login.png)
+
+### Student Dashboard
+![Student](student_dashboard.png)
+
+### Student Prediction Form
+![Input](student_input_form.png)
+
+### AI Assistant
+![AI](Ai_assistant.png)
+
+### High Risk Prediction
+![High Risk](high_risk_prediction_recommendations.png)
+
+### Low Risk Prediction
+![Low Risk](low_risk_prediction_recommendation.png)
+
+### Instructor Dashboard
+![Instructor](instructor_dashboard.png)
+
+### Prediction History
+![History](instructor_dashboard_prediction_history.png)
+
+### Feature Importance
+![Feature](feature_importance.png)
